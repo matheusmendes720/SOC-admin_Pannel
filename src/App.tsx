@@ -43,13 +43,22 @@ export default function App() {
   ]);
   const [terminalLines, setTerminalLines] = useState<{type: 'cmd' | 'out' | 'info', text: string}[]>([
     { type: 'cmd', text: 'cat /sys/kernel/debug/metrics' },
-    { type: 'info', text: 'NODE_NAME: AIS-NODE-ALPHA-X' },
-    { type: 'info', text: 'KERNEL: 6.2.0-26-GENERIC' },
+    { type: 'info', text: 'NODE_NAME: PETROSHIELD-NODE-ALPHA' },
+    { type: 'info', text: 'KERNEL: 6.8.0-PRO-SECURITY' },
     { type: 'info', text: 'ACTIVE_USERS: 1 (720matheusmendes@gmail.com)' },
     { type: 'cmd', text: 'tail -f /var/log/syslog' },
   ]);
 
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const terminalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePos({ x: e.clientX / window.innerWidth, y: e.clientY / window.innerHeight });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   useEffect(() => {
     if (terminalRef.current) {
@@ -58,10 +67,9 @@ export default function App() {
   }, [terminalLines]);
 
   useEffect(() => {
-    // Subscriber loop for the mock BFF layer
     const update = () => setMetrics(metricsService.tick());
     update();
-    const interval = setInterval(update, 5000);
+    const interval = setInterval(update, 2000); // Faster polling for dashboard energy
     return () => clearInterval(interval);
   }, []);
 
@@ -70,87 +78,122 @@ export default function App() {
     setTerminalLines(prev => [
       ...prev,
       { type: 'cmd', text: cmd },
-      { type: 'out', text: `[SYSTEM] Processing request: ${cmd}...` },
-      { type: 'out', text: `[OK] Task executed successfully.` }
+      { type: 'out', text: `[SECURE_ACCESS] Authenticating request: ${cmd.toUpperCase()}...` },
+      { type: 'out', text: `[PETROSHIELD] Execution context verified.` }
     ]);
   };
 
   if (!metrics) return null;
 
   return (
-    <div className="min-h-screen p-3 md:p-4 flex flex-col gap-3 md:gap-4 max-w-[1400px] mx-auto overflow-hidden">
+    <div className="relative min-h-screen p-3 md:p-6 flex flex-col gap-4 max-w-[1600px] mx-auto overflow-hidden bg-tui-bg">
+      {/* 3D Parallax Background Layer */}
+      <motion.div 
+        className="parallax-layer"
+        animate={{ 
+          x: mousePos.x * -20, 
+          y: mousePos.y * -20,
+          rotate: mousePos.x * 1,
+        }}
+        transition={{ type: 'spring', damping: 20, stiffness: 50 }}
+      />
+      
+      {/* Dynamic Glow Orbs */}
+      <div className="absolute top-[20%] left-[10%] w-[500px] h-[500px] bg-neon-matrix/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[20%] right-[10%] w-[600px] h-[600px] bg-petro-orange/5 rounded-full blur-[150px] pointer-events-none" />
+
       {/* Header */}
       <motion.header 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="tui-card flex items-center justify-between py-3 px-5"
+        className="glass-panel sticky top-0 z-50 flex items-center justify-between py-4 px-8 border-white/10"
       >
-        <div className="flex items-center gap-2">
-          <TerminalIcon className="w-5 h-5 text-tui-green" />
-          <span className="tui-mono font-bold text-tui-green text-lg tracking-tight">
-            [ REACT_TUI_OS ]
-          </span>
-        </div>
-        <div className="flex items-center gap-6">
-          <div className="hidden sm:flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-tui-green" />
-            <span className="tui-status-badge border-tui-green text-tui-green">System: Stable</span>
+        <div className="flex items-center gap-4">
+          <div className="p-2 bg-neon-matrix/10 rounded-lg border border-neon-matrix/20 shadow-[0_0_15px_rgba(0,255,65,0.1)]">
+            <TerminalIcon className="w-6 h-6 text-neon-matrix" />
           </div>
-          <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-tui-cyan" />
-            <span className="tui-status-badge border-tui-cyan text-tui-cyan">Uptime: 104:12:44</span>
+          <div className="flex flex-col">
+            <span className="hacker-font font-bold text-neon-matrix text-2xl tracking-widest glow-text-green">
+              PETROSHIELD 2026
+            </span>
+            <span className="text-[9px] uppercase tracking-[0.3em] text-tui-text-secondary font-bold">
+              Formula 1 Protection Tier
+            </span>
+          </div>
+        </div>
+        <div className="flex items-center gap-8">
+          <div className="hidden lg:flex items-center gap-3">
+            <div className="w-2 h-2 rounded-full bg-neon-matrix shadow-[0_0_8px_#00FF41] animate-pulse" />
+            <span className="tui-status-badge border-neon-matrix/30 text-neon-matrix bg-neon-matrix/5">MATRIX_STABLE</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <Clock className="w-4 h-4 text-terminal-cyan" />
+            <span className="tui-status-badge border-terminal-cyan/30 text-terminal-cyan bg-terminal-cyan/5">UPTIME_RESILIENCE</span>
           </div>
         </div>
       </motion.header>
 
-      <div className="grid grid-cols-1 md:grid-cols-[240px_1fr_280px] gap-3 md:gap-4 flex-1 min-h-0">
+      <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr_320px] gap-4 flex-1 min-h-0 relative z-10">
         {/* Sidebar */}
         <motion.aside 
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.1 }}
-          className="tui-card flex flex-col gap-1 overflow-y-auto"
+          className="glass-panel p-4 flex flex-col gap-4 overflow-y-auto custom-scrollbar"
         >
-          <span className="tui-sidebar-title">Project Explorer</span>
-          <FileItem name="/ src" />
-          <FileItem name="  + App.tsx" active />
-          <FileItem name="  + hooks/" />
-          <FileItem name="    - useTerminal.ts" />
-          <FileItem name="  + components/" />
-          <FileItem name="    - Terminal.tsx" />
-          <FileItem name="    - CPUChart.tsx" />
-          <FileItem name="    - ProcessMonitor.tsx" active />
-          <FileItem name="    - Header.tsx" />
-          <div className="mt-4">
-            <span className="tui-sidebar-title">/ services</span>
-            <FileItem name="- metricsService.ts" active />
+          <div>
+            <span className="text-[10px] uppercase text-tui-text-secondary font-bold tracking-widest mb-4 block">Navigation_Tree</span>
+            <div className="space-y-1">
+              <FileItem name="/ core" folder />
+              <FileItem name="  ↳ shield.sys" active />
+              <FileItem name="  ↳ firewall.cfg" />
+              <FileItem name="/ assets" folder />
+              <FileItem name="  ↳ logo_neon_v2" />
+              <FileItem name="  ↳ metrics_schema" />
+            </div>
           </div>
+          
           <div className="mt-4">
-            <span className="tui-sidebar-title">/ config</span>
-            <FileItem name="- theme.json" />
-            <FileItem name="- tsconfig.json" />
+            <span className="text-[10px] uppercase text-tui-text-secondary font-bold tracking-widest mb-4 block">Security_Slices</span>
+            <div className="space-y-1">
+              <FileItem name="endpoint_scan" />
+              <FileItem name="packet_inspect" active />
+              <FileItem name="threat_vector" />
+            </div>
+          </div>
+
+          <div className="mt-auto p-4 border border-neon-matrix/10 rounded-lg bg-neon-matrix/5">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-2 h-2 rounded-full bg-neon-matrix animate-ping" />
+              <span className="hacker-font text-neon-matrix">LIVE_FEED</span>
+            </div>
+            <p className="text-[10px] text-tui-text-secondary leading-tight">
+              Intercepting anomalies in sector 7-G. High priority telemetry incoming.
+            </p>
           </div>
         </motion.aside>
 
         {/* Main Center Area */}
-        <div className="flex flex-col gap-3 md:gap-4 flex-1 min-w-0 overflow-y-auto custom-scrollbar">
+        <div className="flex flex-col gap-4 flex-1 min-w-0 overflow-y-auto custom-scrollbar pb-6">
           <motion.main 
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 }}
-            className="tui-card border-tui-cyan/50 shadow-[inset_0_0_20px_rgba(0,210,255,0.05)] bg-black/40 h-[280px] flex flex-col"
+            className="acrylic-card border-terminal-cyan/20 bg-deep-void/60 h-[320px] flex flex-col shadow-[inset_0_0_30px_rgba(0,255,255,0.03)]"
           >
             <div 
               ref={terminalRef}
-              className="tui-mono space-y-1 overflow-y-auto custom-scrollbar flex-1 p-2"
+              className="tui-mono space-y-2 overflow-y-auto custom-scrollbar flex-1 p-4"
             >
               {terminalLines.map((line, idx) => (
-                <div key={idx} className="flex gap-2">
-                  {line.type === 'cmd' && <span className="text-tui-green shrink-0">root@tui-station:~/app#</span>}
+                <div key={idx} className="flex gap-3 items-start">
+                  {line.type === 'cmd' && (
+                    <span className="text-neon-matrix shrink-0 font-bold opacity-80">❱❱❱</span>
+                  )}
                   <span className={`${
-                    line.type === 'cmd' ? 'text-white' : 
-                    line.type === 'info' ? 'text-tui-text-secondary opacity-80 text-xs' : 
-                    'text-tui-cyan opacity-60 text-[10px]'
+                    line.type === 'cmd' ? 'text-white font-medium' : 
+                    line.type === 'info' ? 'text-terminal-cyan/80 hacker-font tracking-wide' : 
+                    'text-tui-text-secondary opacity-70 text-[11px] leading-relaxed italic'
                   }`}>
                     {line.text}
                   </span>
@@ -165,19 +208,20 @@ export default function App() {
           <ProcessMonitor />
 
           {/* Bottom Panel */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 h-[180px] shrink-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-h-[180px] shrink-0">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="tui-card overflow-y-auto"
+              className="acrylic-card border-petro-orange/20"
             >
-              <span className="tui-sidebar-title flex items-center gap-2">
-                <History className="w-3 h-3" /> Command History
+              <span className="text-[10px] uppercase text-petro-orange font-bold tracking-[0.2em] mb-4 block glow-text-orange">
+                REPLAY_HISTORY
               </span>
-              <div className="tui-mono text-tui-text-secondary space-y-1">
+              <div className="tui-mono text-tui-text-secondary space-y-2">
                 {history.map((cmd, idx) => (
-                  <div key={idx} className={`py-1 border-b border-tui-border/50 truncate ${idx === 0 ? 'text-tui-cyan' : ''}`}>
+                  <div key={idx} className={`py-1 border-b border-white/5 truncate flex gap-2 items-center ${idx === 0 ? 'text-neon-matrix/80' : ''}`}>
+                    <span className="text-[10px] opacity-30">[{idx}]</span>
                     {cmd}
                   </div>
                 ))}
@@ -187,13 +231,13 @@ export default function App() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="tui-card"
+              className="acrylic-card border-terminal-cyan/20"
             >
-              <span className="tui-sidebar-title flex items-center gap-2">
-                <Layers className="w-3 h-3" /> Auto-complete
+              <span className="text-[10px] uppercase text-terminal-cyan font-bold tracking-[0.2em] mb-4 block glow-text-cyan">
+                MACRO_COMPILER
               </span>
               <div className="flex flex-wrap gap-2">
-                {['npm', 'git', 'ls', 'cat', 'grep', 'curl', 'clear', 'node', 'help'].map((text) => (
+                {['shield_on', 'deep_scan', 'flush_cache', 'reboot_node', 'petro_verify', 'matrix_burst', 'trace_rt'].map((text) => (
                   <Suggestion key={text} text={text} />
                 ))}
               </div>
@@ -206,64 +250,56 @@ export default function App() {
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.1 }}
-          className="flex flex-col gap-3 md:gap-4 h-full"
+          className="flex flex-col gap-4 h-full"
         >
           <StatCard 
-            label="CPU Usage" 
+            label="SYSTEM_LOAD" 
             value={`${metrics.cpu}%`} 
             percentage={metrics.cpu} 
-            icon={<Cpu className="w-4 h-4" />} 
-            color="cyan"
+            icon={<Cpu className="w-5 h-5" />} 
+            color="matrix"
           />
           <StatCard 
-            label="Memory Load" 
-            value={`${metrics.memory.used.toFixed(1)} / 16 GB`} 
+            label="MEMORY_RESILIENCE" 
+            value={`${metrics.memory.used.toFixed(1)}GB`} 
             percentage={metrics.memory.percentage} 
-            icon={<Database className="w-4 h-4" />} 
-            color="green"
-          />
-          <StatCard 
-            label="Network Traffic" 
-            value={`${metrics.network.rx.toFixed(1)} KB/s`} 
-            percentage={Math.min(100, (metrics.network.rx / 1000) * 100)} 
-            icon={<Globe className="w-4 h-4" />} 
+            icon={<Database className="w-5 h-5" />} 
             color="orange"
           />
           <StatCard 
-            label="Disk I/O" 
-            value={`${metrics.disk.read.toFixed(1)} MB/s`} 
-            percentage={Math.min(100, (metrics.disk.read / 100) * 100)} 
-            icon={<HardDrive className="w-4 h-4" />} 
+            label="PKT_THROUGHPUT" 
+            value={`${metrics.network.rx.toFixed(0)}kb/s`} 
+            percentage={Math.min(100, (metrics.network.rx / 1000) * 100)} 
+            icon={<Globe className="w-5 h-5" />} 
             color="cyan"
           />
-          <div className="tui-card flex-1">
-            <span className="tui-sidebar-title flex items-center gap-2">
-              <Activity className="w-3 h-3" /> Active Workers
-            </span>
-            <div className="mt-4 space-y-3 tui-mono text-sm">
-              <div className="flex justify-between border-b border-tui-border pb-1">
-                <span>Vite HMR</span>
-                <span className="text-tui-green">ON</span>
+          <div className="acrylic-card flex-1 border-neon-matrix/10">
+            <span className="text-[10px] uppercase text-tui-text-secondary font-bold tracking-[0.2em] mb-4 block">CORE_STATUS_SUMMARY</span>
+            <div className="space-y-4 tui-mono text-xs">
+              <div className="flex justify-between items-center text-neon-matrix/80">
+                <span className="uppercase tracking-widest opacity-60">Matrix_HMR</span>
+                <span className="px-2 py-0.5 bg-neon-matrix/10 border border-neon-matrix/20 rounded">SYNCED</span>
               </div>
-              <div className="flex justify-between border-b border-tui-border pb-1">
-                <span>Tailwind JIT</span>
-                <span className="text-tui-green">ON</span>
+              <div className="flex justify-between items-center text-petro-orange/80">
+                <span className="uppercase tracking-widest opacity-60">Petro_Auth</span>
+                <span className="px-2 py-0.5 bg-petro-orange/10 border border-petro-orange/20 rounded">VALID</span>
               </div>
-              <div className="flex justify-between border-b border-tui-border pb-1">
-                <span>I/O Wait</span>
-                <span className="text-tui-cyan">{metrics.disk.iowait.toFixed(3)}ms</span>
+              <div className="flex justify-between items-center text-terminal-cyan/80">
+                <span className="uppercase tracking-widest opacity-60">I/O_Wait</span>
+                <span className="font-bold">{metrics.disk.iowait.toFixed(3)}ms</span>
               </div>
-              <div className="flex justify-between border-b border-tui-border pb-1">
-                <span>Proc Load</span>
-                <span className="text-tui-green">OPTIMAL</span>
-              </div>
-              <div className="flex justify-between border-b border-tui-border pb-1">
-                <span>Telemetry</span>
-                <span className="text-tui-cyan">5Hz POLLING</span>
-              </div>
-              <div className="flex justify-between border-b border-tui-border pb-1">
-                <span>Compiler</span>
-                <span className="text-tui-orange">WAIT</span>
+              <div className="mt-6">
+                 <div className="flex justify-between items-center mb-1">
+                    <span className="text-[9px] uppercase tracking-widest opacity-50">Global_Resilience</span>
+                    <span className="text-neon-matrix">98.2%</span>
+                 </div>
+                 <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                    <motion.div 
+                      className="h-full bg-neon-matrix shadow-[0_0_10px_#00FF41]"
+                      initial={{ width: 0 }}
+                      animate={{ width: '98.2%' }}
+                    />
+                 </div>
               </div>
             </div>
           </div>
@@ -273,14 +309,18 @@ export default function App() {
   );
 }
 
-function FileItem({ name, active }: { name: string; active?: boolean }) {
+function FileItem({ name, active, folder }: { name: string; active?: boolean; folder?: boolean }) {
   return (
     <div 
-      className={`tui-mono py-1 px-2 cursor-pointer transition-colors ${
-        active ? 'text-tui-cyan bg-tui-cyan/5 border-l-2 border-tui-cyan' : 'text-tui-text-secondary hover:text-tui-text-primary'
+      className={`tui-mono py-1.5 px-3 cursor-pointer transition-all duration-300 rounded-md border border-transparent flex items-center gap-2 group ${
+        active 
+          ? 'text-neon-matrix bg-neon-matrix/10 border-neon-matrix/20 shadow-[0_0_15px_rgba(0,255,65,0.05)]' 
+          : 'text-tui-text-secondary hover:text-white hover:bg-white/5'
       }`}
     >
-      {name}
+      <div className={`w-1.5 h-1.5 rounded-full ${active ? 'bg-neon-matrix shadow-[0_0_8px_#00FF41]' : 'bg-transparent border border-white/20'}`} />
+      <span className={folder ? 'font-bold tracking-wider' : ''}>{name}</span>
+      {active && <span className="ml-auto text-[9px] opacity-40 animate-pulse">ACTIVE</span>}
     </div>
   );
 }
@@ -290,35 +330,40 @@ function StatCard({ label, value, percentage, icon, color }: {
   value: string; 
   percentage: number; 
   icon: ReactNode;
-  color: 'cyan' | 'green' | 'orange' 
+  color: 'matrix' | 'orange' | 'cyan' 
 }) {
-  const colorClass = {
-    cyan: 'bg-tui-cyan',
-    green: 'bg-tui-green',
-    orange: 'bg-tui-orange'
+  const themes = {
+    matrix: { text: 'text-neon-matrix', bg: 'bg-neon-matrix', border: 'border-neon-matrix/20', glow: 'shadow-[0_0_15px_rgba(0,255,65,0.1)]' },
+    orange: { text: 'text-petro-orange', bg: 'bg-petro-orange', border: 'border-petro-orange/20', glow: 'shadow-[0_0_15px_rgba(255,98,0,0.1)]' },
+    cyan: { text: 'text-terminal-cyan', bg: 'bg-terminal-cyan', border: 'border-terminal-cyan/20', glow: 'shadow-[0_0_15px_rgba(0,255,255,0.1)]' }
   }[color];
 
   return (
-    <div className="tui-card">
-      <div className="flex justify-between items-start mb-2">
-        <span className="text-[10px] uppercase text-tui-text-secondary tracking-widest">{label}</span>
-        <div className={`opacity-60 text-tui-${color}`}>{icon}</div>
+    <div className={`acrylic-card ${themes.border} ${themes.glow}`}>
+      <div className="flex justify-between items-start mb-3">
+        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-tui-text-secondary">{label}</span>
+        <div className={`opacity-80 ${themes.text}`}>{icon}</div>
       </div>
-      <div className="tui-mono text-2xl font-bold">{value}</div>
-      <div className="mt-3 h-1 w-full bg-tui-border rounded-full overflow-hidden">
+      <div className="flex items-baseline gap-2">
+        <div className={`tui-mono text-3xl font-black ${themes.text} glow-text-${color === 'matrix' ? 'green' : color}`}>{value}</div>
+      </div>
+      <div className="mt-4 h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
         <motion.div 
           initial={{ width: 0 }}
           animate={{ width: `${percentage}%` }}
-          className={`h-full ${colorClass}`}
+          transition={{ type: 'spring', damping: 15 }}
+          className={`h-full ${themes.bg} shadow-[0_0_10px_currentColor]`}
+          style={{ backgroundColor: `var(--color-${color === 'matrix' ? 'neon-matrix' : color === 'orange' ? 'petro-orange' : 'terminal-cyan'})` }}
         />
       </div>
     </div>
   );
 }
 
-function Suggestion({ text }: { text: string }) {
+function Suggestion({ text, ...props }: { text: string; [key: string]: any }) {
   return (
-    <div className="px-2 py-1 bg-tui-border/50 text-tui-orange tui-mono text-[10px] rounded hover:bg-tui-orange/10 transition-colors cursor-pointer border border-tui-orange/20">
+    <div {...props} className="px-3 py-1.5 bg-deep-void/40 text-terminal-cyan tui-mono text-[10px] rounded-lg hover:bg-terminal-cyan/10 transition-all duration-300 cursor-pointer border border-terminal-cyan/10 hover:border-terminal-cyan/30 flex items-center gap-2 group">
+      <span className="opacity-0 group-hover:opacity-100 transition-opacity">❱</span>
       {text}
     </div>
   );

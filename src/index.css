@@ -1,45 +1,67 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=VT323&display=swap');
 @import "tailwindcss";
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-hacker: "VT323", monospace;
 
-  --color-tui-bg: #08090a;
-  --color-tui-card: #141518;
-  --color-tui-border: #2d2e32;
-  --color-tui-green: #00ff9d;
-  --color-tui-cyan: #00d2ff;
-  --color-tui-orange: #ff9d00;
+  --color-tui-bg: #050505;
+  --color-tui-card: rgba(20, 21, 24, 0.7);
+  --color-tui-border: rgba(45, 46, 50, 0.5);
+  
+  /* PetroShield Palette */
+  --color-neon-matrix: #00FF41;
+  --color-petro-orange: #FF6200;
+  --color-terminal-cyan: #00FFFF;
+  --color-deep-void: #0A0A0A;
+  
   --color-tui-text-primary: #e1e1e6;
   --color-tui-text-secondary: #8b8d98;
 }
 
 @layer base {
   body {
-    @apply bg-tui-bg text-tui-text-primary font-sans antialiased;
+    @apply bg-tui-bg text-tui-text-primary font-sans antialiased overflow-hidden selection:bg-neon-matrix/30 selection:text-white;
   }
 }
 
 @layer components {
-  .tui-card {
-    @apply bg-tui-card border border-tui-border rounded-lg p-4 relative overflow-hidden;
+  .glass-panel {
+    @apply bg-deep-void/40 backdrop-blur-xl border border-white/5 rounded-xl shadow-2xl;
+  }
+
+  .acrylic-card {
+    @apply bg-tui-card backdrop-blur-md border border-tui-border rounded-lg p-4 relative overflow-hidden;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+  }
+
+  .glow-text-green {
+    text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+  }
+
+  .glow-text-orange {
+    text-shadow: 0 0 10px rgba(255, 98, 0, 0.5);
+  }
+
+  .glow-text-cyan {
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
   }
 
   .tui-mono {
-    @apply font-mono text-sm;
+    @apply font-mono text-sm tracking-tight;
+  }
+
+  .hacker-font {
+    @apply font-hacker text-lg;
   }
 
   .tui-status-badge {
-    @apply text-[10px] uppercase tracking-wider bg-tui-green/10 text-tui-green px-2 py-1 border border-tui-green rounded-md;
-  }
-
-  .tui-sidebar-title {
-    @apply text-[11px] uppercase text-tui-text-secondary mb-3 block tracking-normal;
+    @apply text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 border rounded-sm;
   }
 
   .tui-cursor {
-    @apply inline-block w-2 h-4 bg-tui-green align-middle ml-1;
+    @apply inline-block w-2 h-4 bg-neon-matrix align-middle ml-1 shadow-[0_0_8px_#00FF41];
     animation: blink 1s step-end infinite;
   }
 
@@ -47,4 +69,23 @@
     from, to { opacity: 1; }
     50% { opacity: 0; }
   }
+
+  .parallax-layer {
+    @apply absolute inset-[-10%] pointer-events-none;
+    background-image: 
+      radial-gradient(circle at 2px 2px, rgba(0, 255, 65, 0.05) 1px, transparent 0);
+    background-size: 32px 32px;
+  }
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-tui-border/50 rounded-full hover:bg-neon-matrix/30 transition-colors;
 }

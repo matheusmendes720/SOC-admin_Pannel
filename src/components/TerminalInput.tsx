@@ -71,13 +71,13 @@ export default function TerminalInput({ onExecute }: TerminalInputProps) {
   };
 
   return (
-    <div className="relative flex items-center gap-2 tui-mono mt-2">
-      <span className="text-tui-green shrink-0">root@tui-station:~/app#</span>
+    <div className="relative flex items-center gap-2 tui-mono mt-4 border-t border-white/5 pt-4">
+      <span className="text-neon-matrix shrink-0 font-bold glow-text-green">PETRO_SEC:~/shield#</span>
       
       <div className="relative flex-1">
         {/* Suggestion Ghost Text */}
         {suggestion && (
-          <span className="absolute inset-0 text-tui-text-secondary opacity-30 pointer-events-none">
+          <span className="absolute inset-0 text-white opacity-20 pointer-events-none italic">
             {suggestion}
           </span>
         )}
@@ -88,7 +88,7 @@ export default function TerminalInput({ onExecute }: TerminalInputProps) {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="w-full bg-transparent border-none outline-none text-white selection:bg-tui-cyan/30"
+          className="w-full bg-transparent border-none outline-none text-white selection:bg-neon-matrix/30 caret-neon-matrix font-medium"
           spellCheck={false}
           autoComplete="off"
         />
@@ -97,12 +97,12 @@ export default function TerminalInput({ onExecute }: TerminalInputProps) {
       <AnimatePresence>
         {suggestion && (
           <motion.div 
-            initial={{ opacity: 0, x: 10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0 }}
-            className="absolute right-0 top-[-24px] bg-tui-card border border-tui-orange/30 px-2 py-0.5 rounded text-[9px] text-tui-orange"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="absolute right-0 top-[-28px] bg-petro-orange/10 border border-petro-orange/30 px-2 py-0.5 rounded text-[9px] text-petro-orange font-black tracking-widest uppercase shadow-[0_0_15px_rgba(255,98,0,0.2)]"
           >
-            TAB TO AUTOCOMPLETE
+            TAB_AUTOCOMPLETE
           </motion.div>
         )}
       </AnimatePresence>
