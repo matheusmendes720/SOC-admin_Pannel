@@ -16,6 +16,11 @@
   --color-terminal-cyan: #00FFFF;
   --color-deep-void: #0A0A0A;
   
+  --color-tui-matrix: #00FF41;
+  --color-tui-orange: #FF6200;
+  --color-tui-cyan: #00FFFF;
+  --color-tui-red: #ef4444;
+  
   --color-tui-text-primary: #e1e1e6;
   --color-tui-text-secondary: #8b8d98;
 }
@@ -46,6 +51,10 @@
 
   .glow-text-cyan {
     text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+  }
+
+  .glow-text-red {
+    text-shadow: 0 0 15px rgba(239, 68, 68, 0.6);
   }
 
   .tui-mono {
