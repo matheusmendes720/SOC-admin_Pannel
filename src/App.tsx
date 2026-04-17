@@ -3,8 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import { useState, useEffect, ReactNode, useRef } from "react";
 import { motion } from "motion/react";
-import { ReactNode } from "react";
+import { metricsService, MetricSnapshot } from "./services/metricsService";
+import CPUChart from "./components/CPUChart";
+import ProcessMonitor from "./components/ProcessMonitor";
+import TerminalInput from "./components/TerminalInput";
 import { 
   Cpu, 
   Database, 
@@ -20,7 +24,59 @@ import {
   HardDrive
 } from "lucide-react";
 
+/**
+ * Bento TUI Dashboard
+ * An advanced data-driven frontend architecture utilizing a Mock BFF (Backend-For-Frontend)
+ * for high-density metric visualization without a physical database tier.
+ * 
+ * Architecture Patterns:
+ * - Singleton Service: metricsService manages cross-component data synchronization.
+ * - Reactive Polling: Secondary data streams update at 5Hz frequencies.
+ * - Bento Composition: UI decomposition into logical organisms (Header, Sidebar, Monitor, Chart).
+ */
 export default function App() {
+  const [metrics, setMetrics] = useState<MetricSnapshot | null>(null);
+  const [history, setHistory] = useState<string[]>([
+    'curl -X GET /api/v1/metrics/aggregate',
+    'grep -r "MetricsEngine" ./src/services',
+    'node --inspect-brk ./server.ts'
+  ]);
+  const [terminalLines, setTerminalLines] = useState<{type: 'cmd' | 'out' | 'info', text: string}[]>([
+    { type: 'cmd', text: 'cat /sys/kernel/debug/metrics' },
+    { type: 'info', text: 'NODE_NAME: AIS-NODE-ALPHA-X' },
+    { type: 'info', text: 'KERNEL: 6.2.0-26-GENERIC' },
+    { type: 'info', text: 'ACTIVE_USERS: 1 (720matheusmendes@gmail.com)' },
+    { type: 'cmd', text: 'tail -f /var/log/syslog' },
+  ]);
+
+  const terminalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (terminalRef.current) {
+      terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+    }
+  }, [terminalLines]);
+
+  useEffect(() => {
+    // Subscriber loop for the mock BFF layer
+    const update = () => setMetrics(metricsService.tick());
+    update();
+    const interval = setInterval(update, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleExecute = (cmd: string) => {
+    setHistory(prev => [cmd, ...prev].slice(0, 10));
+    setTerminalLines(prev => [
+      ...prev,
+      { type: 'cmd', text: cmd },
+      { type: 'out', text: `[SYSTEM] Processing request: ${cmd}...` },
+      { type: 'out', text: `[OK] Task executed successfully.` }
+    ]);
+  };
+
+  if (!metrics) return null;
+
   return (
     <div className="min-h-screen p-3 md:p-4 flex flex-col gap-3 md:gap-4 max-w-[1400px] mx-auto overflow-hidden">
       {/* Header */}
@@ -62,7 +118,13 @@ export default function App() {
           <FileItem name="    - useTerminal.ts" />
           <FileItem name="  + components/" />
           <FileItem name="    - Terminal.tsx" />
+          <FileItem name="    - CPUChart.tsx" />
+          <FileItem name="    - ProcessMonitor.tsx" active />
           <FileItem name="    - Header.tsx" />
+          <div className="mt-4">
+            <span className="tui-sidebar-title">/ services</span>
+            <FileItem name="- metricsService.ts" active />
+          </div>
           <div className="mt-4">
             <span className="tui-sidebar-title">/ config</span>
             <FileItem name="- theme.json" />
@@ -71,45 +133,39 @@ export default function App() {
         </motion.aside>
 
         {/* Main Center Area */}
-        <div className="flex flex-col gap-3 md:gap-4 flex-1 min-w-0">
+        <div className="flex flex-col gap-3 md:gap-4 flex-1 min-w-0 overflow-y-auto custom-scrollbar">
           <motion.main 
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 }}
-            className="tui-card border-tui-cyan/50 shadow-[inset_0_0_20px_rgba(0,210,255,0.05)] bg-black flex-1 flex flex-col"
+            className="tui-card border-tui-cyan/50 shadow-[inset_0_0_20px_rgba(0,210,255,0.05)] bg-black/40 h-[280px] flex flex-col"
           >
-            <div className="tui-mono space-y-2 overflow-y-auto custom-scrollbar flex-1">
-              <div className="flex gap-2">
-                <span className="text-tui-green">root@tui-station:~/app#</span>
-                <span className="text-white">npm run dev</span>
-              </div>
-              <div className="text-tui-text-secondary opacity-80">{">"} vite dev</div>
-              <div className="text-tui-text-secondary opacity-80">VITE v6.2.0 ready in 120ms</div>
-              <div className="text-tui-text-secondary opacity-80">  ➜  Local:   http://localhost:3000/</div>
-              <div className="text-tui-text-secondary opacity-80">  ➜  Network: use --host to expose</div>
-              
-              <div className="my-4" />
-              
-              <div className="flex gap-2">
-                <span className="text-tui-green">root@tui-station:~/app#</span>
-                <span className="text-white">git status</span>
-              </div>
-              <div className="text-tui-text-secondary opacity-80">On branch main</div>
-              <div className="text-tui-text-secondary opacity-80">Changes not staged for commit:</div>
-              <div className="text-tui-text-secondary opacity-80">  (use "git add {"<"}file{">"}..." to update what will be committed)</div>
-              <div className="text-tui-orange pl-4 italic">modified:   src/App.tsx</div>
-              
-              <div className="my-4" />
-              
-              <div className="flex gap-2 items-center">
-                <span className="text-tui-green">root@tui-station:~/app#</span>
-                <span className="text-white group">grep "Bento" .<span className="tui-cursor" /></span>
-              </div>
+            <div 
+              ref={terminalRef}
+              className="tui-mono space-y-1 overflow-y-auto custom-scrollbar flex-1 p-2"
+            >
+              {terminalLines.map((line, idx) => (
+                <div key={idx} className="flex gap-2">
+                  {line.type === 'cmd' && <span className="text-tui-green shrink-0">root@tui-station:~/app#</span>}
+                  <span className={`${
+                    line.type === 'cmd' ? 'text-white' : 
+                    line.type === 'info' ? 'text-tui-text-secondary opacity-80 text-xs' : 
+                    'text-tui-cyan opacity-60 text-[10px]'
+                  }`}>
+                    {line.text}
+                  </span>
+                </div>
+              ))}
+              <TerminalInput onExecute={handleExecute} />
             </div>
           </motion.main>
 
+          <CPUChart />
+          
+          <ProcessMonitor />
+
           {/* Bottom Panel */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 h-[180px]">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 h-[180px] shrink-0">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -120,9 +176,11 @@ export default function App() {
                 <History className="w-3 h-3" /> Command History
               </span>
               <div className="tui-mono text-tui-text-secondary space-y-1">
-                <div className="pb-1 border-b border-tui-border/50">cd src && ls -la</div>
-                <div className="py-1 border-b border-tui-border/50">npm install @google/genai</div>
-                <div className="py-1 text-tui-cyan">cat package.json | grep version</div>
+                {history.map((cmd, idx) => (
+                  <div key={idx} className={`py-1 border-b border-tui-border/50 truncate ${idx === 0 ? 'text-tui-cyan' : ''}`}>
+                    {cmd}
+                  </div>
+                ))}
               </div>
             </motion.div>
             <motion.div 
@@ -135,11 +193,9 @@ export default function App() {
                 <Layers className="w-3 h-3" /> Auto-complete
               </span>
               <div className="flex flex-wrap gap-2">
-                <Suggestion text="--force" />
-                <Suggestion text="--save-dev" />
-                <Suggestion text="--verbose" />
-                <Suggestion text="--silent" />
-                <Suggestion text="--ignore-scripts" />
+                {['npm', 'git', 'ls', 'cat', 'grep', 'curl', 'clear', 'node', 'help'].map((text) => (
+                  <Suggestion key={text} text={text} />
+                ))}
               </div>
             </motion.div>
           </div>
@@ -154,29 +210,29 @@ export default function App() {
         >
           <StatCard 
             label="CPU Usage" 
-            value="42.8%" 
-            percentage={42.8} 
+            value={`${metrics.cpu}%`} 
+            percentage={metrics.cpu} 
             icon={<Cpu className="w-4 h-4" />} 
             color="cyan"
           />
           <StatCard 
             label="Memory Load" 
-            value="2.4 / 16 GB" 
-            percentage={15} 
+            value={`${metrics.memory.used.toFixed(1)} / 16 GB`} 
+            percentage={metrics.memory.percentage} 
             icon={<Database className="w-4 h-4" />} 
             color="green"
           />
           <StatCard 
             label="Network Traffic" 
-            value="85.2 KB/s" 
-            percentage={62} 
+            value={`${metrics.network.rx.toFixed(1)} KB/s`} 
+            percentage={Math.min(100, (metrics.network.rx / 1000) * 100)} 
             icon={<Globe className="w-4 h-4" />} 
             color="orange"
           />
           <StatCard 
             label="Disk I/O" 
-            value="12.5 MB/s" 
-            percentage={28} 
+            value={`${metrics.disk.read.toFixed(1)} MB/s`} 
+            percentage={Math.min(100, (metrics.disk.read / 100) * 100)} 
             icon={<HardDrive className="w-4 h-4" />} 
             color="cyan"
           />
@@ -194,8 +250,16 @@ export default function App() {
                 <span className="text-tui-green">ON</span>
               </div>
               <div className="flex justify-between border-b border-tui-border pb-1">
-                <span>ESLint</span>
-                <span className="text-tui-green">ON</span>
+                <span>I/O Wait</span>
+                <span className="text-tui-cyan">{metrics.disk.iowait.toFixed(3)}ms</span>
+              </div>
+              <div className="flex justify-between border-b border-tui-border pb-1">
+                <span>Proc Load</span>
+                <span className="text-tui-green">OPTIMAL</span>
+              </div>
+              <div className="flex justify-between border-b border-tui-border pb-1">
+                <span>Telemetry</span>
+                <span className="text-tui-cyan">5Hz POLLING</span>
               </div>
               <div className="flex justify-between border-b border-tui-border pb-1">
                 <span>Compiler</span>
