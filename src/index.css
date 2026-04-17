@@ -1,0 +1,50 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-tui-bg: #08090a;
+  --color-tui-card: #141518;
+  --color-tui-border: #2d2e32;
+  --color-tui-green: #00ff9d;
+  --color-tui-cyan: #00d2ff;
+  --color-tui-orange: #ff9d00;
+  --color-tui-text-primary: #e1e1e6;
+  --color-tui-text-secondary: #8b8d98;
+}
+
+@layer base {
+  body {
+    @apply bg-tui-bg text-tui-text-primary font-sans antialiased;
+  }
+}
+
+@layer components {
+  .tui-card {
+    @apply bg-tui-card border border-tui-border rounded-lg p-4 relative overflow-hidden;
+  }
+
+  .tui-mono {
+    @apply font-mono text-sm;
+  }
+
+  .tui-status-badge {
+    @apply text-[10px] uppercase tracking-wider bg-tui-green/10 text-tui-green px-2 py-1 border border-tui-green rounded-md;
+  }
+
+  .tui-sidebar-title {
+    @apply text-[11px] uppercase text-tui-text-secondary mb-3 block tracking-normal;
+  }
+
+  .tui-cursor {
+    @apply inline-block w-2 h-4 bg-tui-green align-middle ml-1;
+    animation: blink 1s step-end infinite;
+  }
+
+  @keyframes blink {
+    from, to { opacity: 1; }
+    50% { opacity: 0; }
+  }
+}
