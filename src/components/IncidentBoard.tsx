@@ -14,22 +14,31 @@ interface IncidentBoardProps {
 
 /**
  * IncidentBoard Component
- * Displays live security incidents and agent coordination statuses.
- * Simulates a SOC (Security Operations Center) mission board.
+ * 
+ * ARCHITECTURAL ROLE:
+ * Real-time Multi-Agent Orchestration Observer. Acts as the primary display for 
+ * the async `incidents` buffer and the `agents` registry. It translates the 
+ * internal status of isolated serverless-like agents into a human-readable 
+ * mission board.
+ * 
+ * DESIGN PATTERN:
+ * Split Bento Detail Panel focusing on high-severity alerting (left) and 
+ * agent resource/status telemetry (right).
  */
 export default function IncidentBoard({ incidents, agents }: IncidentBoardProps) {
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mt-4">
+    <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 h-full">
       {/* Live Alerts List */}
-      <div className="xl:col-span-2 acrylic-card border-neon-matrix/10 bg-black/40">
-        <div className="flex items-center gap-2 mb-4 border-b border-white/5 pb-2">
+      <div className="xl:col-span-2 acrylic-card border-neon-matrix/10 bg-black/40 flex flex-col p-3">
+        <div className="flex items-center gap-2 mb-3 border-b border-white/5 pb-2">
           <AlertCircle className="w-4 h-4 text-petro-orange animate-pulse" />
           <span className="text-[10px] uppercase text-tui-text-secondary font-bold tracking-[0.2em]">
             ACTIVE_SECURITY_INCIDENTS
           </span>
         </div>
 
-        <div className="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+        <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+          <div className="space-y-3 flex-1 overflow-y-auto custom-scrollbar pr-2">
           <AnimatePresence mode="popLayout">
             {incidents.length === 0 ? (
               <motion.div 
@@ -74,9 +83,10 @@ export default function IncidentBoard({ incidents, agents }: IncidentBoardProps)
           </AnimatePresence>
         </div>
       </div>
+    </div>
 
-      {/* Multi-Agentic Sync Status */}
-      <div className="acrylic-card border-terminal-cyan/10 bg-black/40">
+    {/* Multi-Agentic Sync Status */}
+      <div className="acrylic-card border-terminal-cyan/10 bg-black/40 p-3 h-full overflow-hidden flex flex-col">
         <div className="flex items-center gap-2 mb-4 border-b border-white/5 pb-2">
           <UserCheck className="w-4 h-4 text-terminal-cyan" />
           <span className="text-[10px] uppercase text-tui-text-secondary font-bold tracking-[0.2em]">

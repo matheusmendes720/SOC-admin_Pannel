@@ -10,8 +10,20 @@ import { ShieldCheck, Zap } from 'lucide-react';
 
 /**
  * AgentActivityMonitor Component
- * Visualizes the activity and load of multi-agentic security entities.
- * Replaces the traditional process monitor with agentic coordination telemetry.
+ * 
+ * ARCHITECTURAL ROLE:
+ * Agentic Swarm Activity Heartbeat. This specialized monitor replaces traditional
+ * OS process tracking with simulation-specific agent telemetry. It provides 
+ * high-fidelity visibility into the "Compute Load" of specific serverless-like 
+ * agentic entities.
+ * 
+ * DESIGN PATTERN:
+ * TUI Heartbeat Table. Uses a persistent grid layout with status-aware 
+ * indicators and load-balancing bars.
+ * 
+ * DATA MAPPING:
+ * Directly maps the `SecurityAgent` registry from the simulation data model, 
+ * providing a tabular view of coordination and resource utilization.
  */
 export default function ProcessMonitor() {
   const [agents, setAgents] = useState<SecurityAgent[]>([]);

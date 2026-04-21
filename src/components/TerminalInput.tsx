@@ -7,18 +7,16 @@ import { useState, useRef, useEffect, KeyboardEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 
 const SUGGESTIONS = [
-  'npm run dev',
-  'npm install @google/genai',
-  'git status',
-  'git commit -m "update dashboard"',
-  'ls -la',
-  'cat /sys/kernel/debug/metrics',
-  'grep -r "MetricsEngine" ./src',
-  'curl -X GET /api/v1/metrics',
-  'node --inspect-brk server.ts',
-  'tail -f /var/log/syslog',
-  'clear',
-  'help'
+  'axeguard --harden-nodes',
+  'dlp.extract --pii-check',
+  'langgraph.sync --subgraph-01',
+  'prometheus.query --entropy',
+  'grep -i "THREAT" /var/logs/flows',
+  'siem.ingest --source-alpha',
+  'agent.triage --l2-escalate',
+  'system.diag --heavy',
+  'help',
+  'clear'
 ];
 
 interface TerminalInputProps {
@@ -27,8 +25,19 @@ interface TerminalInputProps {
 
 /**
  * TerminalInput Component
- * Provides a high-fidelity command entry interface with real-time autocompletion.
- * Supports Tab for completion and Enter for execution.
+ * 
+ * ARCHITECTURAL ROLE:
+ * TUI Control Interface. Acts as the primary write-conduit for the simulation 
+ * environment. It allows users to simulate CLI-driven orchestration of the 
+ * agentic middlewares (Axe-Guard, LangGraph, etc).
+ * 
+ * DESIGN PATTERN:
+ * Ghost-text Autocompletion. Implements a real-time "Command Suggestion" engine 
+ * that predicts SOC-specific operations based on the `SUGGESTIONS` dictionary.
+ * 
+ * DATA MAPPING:
+ * Dispatches terminal primitives to the global execution history, which is 
+ * consumed by the operational logs to simulate persistent command auditing.
  */
 export default function TerminalInput({ onExecute }: TerminalInputProps) {
   const [input, setInput] = useState('');
@@ -71,8 +80,8 @@ export default function TerminalInput({ onExecute }: TerminalInputProps) {
   };
 
   return (
-    <div className="relative flex items-center gap-2 tui-mono mt-4 border-t border-white/5 pt-4">
-      <span className="text-neon-matrix shrink-0 font-bold glow-text-green">PETRO_SEC:~/shield#</span>
+    <div className="relative flex items-center gap-2 tui-mono py-1">
+      <span className="text-neon-matrix shrink-0 font-bold glow-text-green text-sm tracking-tight">PETRO_SEC:~/shield#</span>
       
       <div className="relative flex-1">
         {/* Suggestion Ghost Text */}

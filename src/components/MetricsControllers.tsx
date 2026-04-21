@@ -15,8 +15,19 @@ interface MetricsControllersProps {
 
 /**
  * MetricsControllers Component
- * Provides interactive sliders and toggles for the multi-agentic SOC simulation.
- * Lives in the left sidebar to control global simulation parameters.
+ * 
+ * ARCHITECTURAL ROLE:
+ * Simulation Hyperparameter Orchestrator. This component provides the primary 
+ * "Steering UI" for the serverless algorithms residing in the MetricsEngine. 
+ * 
+ * DESIGN PATTERN:
+ * Controller Grid. Uses high-contrast sliders and status-aware toggle buttons 
+ * to manipulate state across the global simulation context.
+ * 
+ * DATA MAPPING:
+ * Directly mutates the `MetricsConfig` properties (Sensitivity, Threshold, Speed). 
+ * These mutations trigger immediate algorithmic shifts in the `generateSnapshot` 
+ * heuristic loop, changing the frequency and severity of mock data output.
  */
 export default function MetricsControllers({ config, onChange }: MetricsControllersProps) {
   return (
@@ -55,6 +66,22 @@ export default function MetricsControllers({ config, onChange }: MetricsControll
             value={config.threshold}
             onChange={(e) => onChange({ threshold: parseInt(e.target.value) })}
             className="w-full h-1 bg-white/5 rounded-full appearance-none cursor-pointer accent-petro-orange"
+          />
+        </div>
+
+        {/* Lifecycle Speed Slider */}
+        <div className="space-y-2">
+          <div className="flex justify-between text-[10px] font-mono">
+            <span className="text-white/60">ORCH_SPEED</span>
+            <span className="text-terminal-cyan">{config.lifecycleSpeed}x</span>
+          </div>
+          <input 
+            type="range" 
+            min="1" 
+            max="10" 
+            value={config.lifecycleSpeed}
+            onChange={(e) => onChange({ lifecycleSpeed: parseInt(e.target.value) })}
+            className="w-full h-1 bg-white/5 rounded-full appearance-none cursor-pointer accent-terminal-cyan"
           />
         </div>
       </div>

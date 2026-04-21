@@ -16,12 +16,27 @@ import {
 } from 'recharts';
 import { Globe } from 'lucide-react';
 
+interface NetworkTrafficChartProps {
+  rx: number;
+  tx: number;
+}
+
 /**
  * NetworkTrafficChart Component
- * Visualizes Network RX/TX telemetry data over the last 60 minutes.
- * Uses Terminal Cyan for RX and Petro Orange for TX traffic.
+ * 
+ * ARCHITECTURAL ROLE:
+ * Dual-Channel Network Throughput Tracker. This component visualizes the binary 
+ * flow (RX/TX) of network telemetry metrics synthesized by the MetricsEngine.
+ * 
+ * DESIGN PATTERN:
+ * Ingress/Egress Glow-Tech. Uses contrasting color variables (Cyan vs Orange) 
+ * to visually separate downstream from upstream data intensity.
+ * 
+ * DATA MAPPING:
+ * Directly maps the `network.rx` and `network.tx` historical streams into a 
+ * synchronized AreaChart for volumetric analysis.
  */
-export default function NetworkTrafficChart() {
+export default function NetworkTrafficChart({ rx, tx }: NetworkTrafficChartProps) {
   const [data, setData] = useState(() => 
     metricsService.getHistory().map((snap, idx) => ({
       time: `${59 - idx}m ago`,
@@ -31,30 +46,25 @@ export default function NetworkTrafficChart() {
   );
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      const latest = metricsService.tick();
-      setData(prevData => {
-        const newData = prevData.slice(1).map((item, idx) => ({
-          ...item,
-          time: `${59 - idx}m ago`
-        }));
-        
-        newData.push({
-          time: '0m ago',
-          rx: latest.network.rx,
-          tx: latest.network.tx
-        });
-        
-        return newData;
+    setData(prevData => {
+      const newData = prevData.slice(1).map((item, idx) => ({
+        ...item,
+        time: `${59 - idx}m ago`
+      }));
+      
+      newData.push({
+        time: '0m ago',
+        rx: rx,
+        tx: tx
       });
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, []);
+      
+      return newData;
+    });
+  }, [rx, tx]);
 
   return (
-    <div className="w-full h-[220px] mt-4 acrylic-card border-terminal-cyan/20 bg-black/60 shadow-[0_0_20px_rgba(0,255,255,0.05)]">
-      <div className="flex items-center justify-between mb-4">
+    <div className="w-full h-full acrylic-card border-terminal-cyan/20 bg-black/60 shadow-[0_0_20px_rgba(0,255,255,0.05)] flex flex-col p-3">
+      <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <Globe className="w-4 h-4 text-terminal-cyan animate-pulse" />
           <span className="text-[10px] uppercase text-terminal-cyan font-bold tracking-[0.2em] pl-1 glow-text-cyan">
@@ -68,7 +78,7 @@ export default function NetworkTrafficChart() {
           </div>
         </div>
       </div>
-      <ResponsiveContainer width="100%" height="80%">
+      <ResponsiveContainer width="100%" height="100%" minWidth={0}>
         <AreaChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
           <defs>
             <linearGradient id="rxGradient" x1="0" y1="0" x2="0" y2="1">

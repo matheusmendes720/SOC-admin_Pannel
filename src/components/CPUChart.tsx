@@ -16,12 +16,23 @@ import {
 } from 'recharts';
 import { Activity } from 'lucide-react';
 
+interface CPUChartProps {
+  usage: number;
+}
+
 /**
  * CPUChart Component
- * Visualizes CPU load telemetry data fetched from the internal MetricsEngine.
- * Implements a sliding window visualization of the last 60 minutes of activity.
+ * 
+ * ARCHITECTURAL ROLE:
+ * Real-time Historical Time-Series Visualizer. This component implements a local
+ * sliding-window buffer to display the last 60 minutes of CPU load telemetry
+ * derived from the `MetricSnapshot.cpu` synthesized by the BFF MetricsEngine.
+ * 
+ * DESIGN PATTERN:
+ * High-Density Glow-Tech aesthetic utilizing Recharts Area gradients and 
+ * neon-matrix stroke variables to represent infrastructure pressure.
  */
-export default function CPUChart() {
+export default function CPUChart({ usage }: CPUChartProps) {
   const [data, setData] = useState(() => 
     metricsService.getHistory().map((snap, idx) => ({
       time: `${59 - idx}m ago`,
@@ -30,29 +41,24 @@ export default function CPUChart() {
   );
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      const latest = metricsService.tick();
-      setData(prevData => {
-        const newData = prevData.slice(1).map((item, idx) => ({
-          ...item,
-          time: `${59 - idx}m ago`
-        }));
-        
-        newData.push({
-          time: '0m ago',
-          usage: latest.cpu
-        });
-        
-        return newData;
+    setData(prevData => {
+      const newData = prevData.slice(1).map((item, idx) => ({
+        ...item,
+        time: `${59 - idx}m ago`
+      }));
+      
+      newData.push({
+        time: '0m ago',
+        usage: usage
       });
-    }, 2000); // Higher frequency for juicy feel
-
-    return () => clearInterval(interval);
-  }, []);
+      
+      return newData;
+    });
+  }, [usage]);
 
   return (
-    <div className="w-full h-[220px] mt-4 acrylic-card border-neon-matrix/20 bg-black/60 shadow-[0_0_20px_rgba(0,255,65,0.05)]">
-      <div className="flex items-center justify-between mb-4">
+    <div className="w-full h-full acrylic-card border-neon-matrix/20 bg-black/60 shadow-[0_0_20px_rgba(0,255,65,0.05)] flex flex-col p-3">
+      <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <Activity className="w-4 h-4 text-neon-matrix animate-pulse" />
           <span className="text-[10px] uppercase text-neon-matrix font-bold tracking-[0.2em] pl-1 glow-text-green">
@@ -66,7 +72,7 @@ export default function CPUChart() {
           </div>
         </div>
       </div>
-      <ResponsiveContainer width="100%" height="80%">
+      <ResponsiveContainer width="100%" height="100%" minWidth={0}>
         <AreaChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
           <defs>
             <linearGradient id="usageGradient" x1="0" y1="0" x2="0" y2="1">
